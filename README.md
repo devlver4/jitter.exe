@@ -2,7 +2,7 @@
 
 Animated pixel art drawing tool. Inspired by Wiggly Paint.
 
-Available on [itch.io](https://d4cvalentine.itch.io/jitter](https://devlver4.itch.io/jitter-living-ink) — runs in the browser, no install needed.
+Available on [[itch.io](https://d4cvalentine.itch.io/jitter](https://devlver4.itch.io/jitter-living-ink)](https://devlver4.itch.io/jitter-living-ink) — runs in the browser, no install needed.
 
 ---
 
