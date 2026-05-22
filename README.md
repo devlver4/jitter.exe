@@ -1,53 +1,69 @@
-# WIGGLE 🔴
+# Jitter — Living Ink
 
-Ferramenta de desenho pixel com line boil animado (estilo WigglyPaint).
+Animated pixel art drawing tool. Inspired by Wiggly Paint.
 
-## Como rodar
+---
+
+## Download (Windows)
+
+Download `Jitter.exe` from the [Releases](../../releases) page and run it.
+
+Your drawings are saved in `JitterData/drawings/` next to the exe.
+
+> Windows may show a SmartScreen warning on first run — click **"More info" → "Run anyway"**.  
+> This happens with any unsigned app and is safe to bypass.
+
+---
+
+## Play in browser
+
+Also available on [itch.io](https://d4cvalentine.itch.io/jitter).  
+Browser version saves drawings in local storage.
+
+---
+
+## Build the exe yourself
+
+**Requirements:** [Node.js](https://nodejs.org) v18+
 
 ```bash
-# 1. Instalar dependências
+npm install
+npm run build
+```
+
+Output: `dist/Jitter.exe`
+
+---
+
+## Run from source
+
+**Desktop (Electron):**
+```bash
+npm install
+npm start
+```
+
+**Browser (Flask):**
+```bash
 pip install flask
-
-# 2. Rodar o servidor
 python app.py
-
-# 3. Abrir no navegador
-http://localhost:5000
+# open http://localhost:5000
 ```
 
-## Funcionalidades
+---
 
-- **Gallery**: tela inicial com todos os desenhos salvos
-- **Editor**: ferramenta de desenho com:
-  - Motor de pixel stamp (sem anti-aliasing, igual ao WigglyPaint original)
-  - 3 buffers ciclando a 12fps → line boil automático
-  - 15 cores + cor personalizada
-  - 6 tamanhos de pincel
-  - Borracha
-  - Fundo customizável
-  - Tamanho do canvas ajustável (até 2000×2000)
-  - Export de GIF animado
-  - Salvar/carregar desenhos
-  - Ctrl+Z para desfazer, Ctrl+S para salvar
+## Shortcuts
 
-## Estrutura
-
-```
-wiggly/
-├── app.py               # Flask backend
-├── requirements.txt
-├── drawings/            # criado automaticamente
-│   └── meta.json        # metadados + dados dos desenhos
-└── templates/
-    ├── gallery.html     # tela inicial
-    └── editor.html      # ferramenta de desenho
-```
-
-## Atalhos
-
-| Tecla    | Ação          |
-|----------|---------------|
-| Ctrl+Z   | Desfazer      |
-| Ctrl+S   | Salvar        |
-| E        | Borracha      |
-| P        | Caneta        |
+| Key | Action |
+|-----|--------|
+| P | Pen (jitter) |
+| S | Pen (static) |
+| M | Marker |
+| F | Fill |
+| E | Eraser |
+| C | Clip mask |
+| B | Animated border |
+| Ctrl+Z | Undo |
+| Ctrl+Y | Redo |
+| Ctrl+S | Save |
+| +/- | Zoom in/out |
