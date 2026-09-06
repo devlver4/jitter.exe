@@ -103,6 +103,26 @@ app.whenReady().then(async () => {
     t('clip contains the stroke', !leaked);
     pushAction(clipAction(null));
 
+    // ── the live stroke must appear as it is drawn, not on the 12fps tick ──
+    setTool('pen');
+    live = null;
+    startDraw({ clientX: 0, clientY: 0, preventDefault(){} });
+    live.pts = [{x: 60, y: 200}];
+    rebuildLive();
+    const drawnAfterStart = liveDrawn;
+    // Extend the stroke the way moveDraw does, without a jitter tick.
+    live.pts.push({x: 200, y: 205});
+    repaintLive(false);
+    t('live stroke appends without a full repaint', liveDrawn === 2 && drawnAfterStart === 1,
+      'liveDrawn=' + liveDrawn);
+    let inkFound = false;
+    for (let x = 120; x < 190 && !inkFound; x++)
+      for (let y = 195; y < 215; y++)
+        if (liveBuf.getContext('2d',{willReadFrequently:true}).getImageData(x,y,1,1).data[3] > 0) { inkFound = true; break; }
+    t('appended segment is on screen immediately', inkFound);
+    live = null; liveDrawn = 0;
+    liveBuf.getContext('2d').clearRect(0,0,W,H);
+
     // ── fills are run-length now, not base64 PNG ─────────
     setTool('fill');
     doFill({x: 400, y: 300});
