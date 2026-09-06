@@ -1,0 +1,9 @@
+node_modules/
+
+# Build output
+dist/
+*.zip
+
+# Local drawings (Electron writes these next to the exe in portable mode)
+drawings/
+JitterData/

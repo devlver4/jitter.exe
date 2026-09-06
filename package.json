@@ -1,0 +1,32 @@
+{
+  "name": "jitter",
+  "version": "1.0.0",
+  "description": "Animated pixel art drawing tool",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "test": "node --test test/run.js",
+    "test:smoke": "electron test/smoke.js",
+    "bench": "electron test/bench.js editor.html"
+  },
+  "build": {
+    "appId": "com.jitter.paint",
+    "productName": "Jitter",
+    "directories": { "output": "dist" },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "editor.html",
+      "lib.js"
+    ],
+    "win": {
+      "target": [{ "target": "portable", "arch": ["x64"] }]
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}
