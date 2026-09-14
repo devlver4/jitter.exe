@@ -37,9 +37,20 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .hactions{display:flex;align-items:center;gap:10px}
 .icon-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted);cursor:pointer;font-size:.85rem;line-height:1;transition:color .12s,border-color .12s,background .12s}
 .icon-btn:hover{color:var(--text);border-color:var(--muted);background:var(--hover)}
+.ghost-btn{display:flex;align-items:center;gap:6px;background:none;border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--ui);font-size:.8rem;font-weight:500;padding:8px 14px;cursor:pointer;text-decoration:none;transition:border-color .12s,background .12s}
+.ghost-btn:hover{border-color:var(--muted);background:var(--hover)}
 .new-btn{display:flex;align-items:center;gap:7px;background:var(--accent);color:var(--accent-fg);border:none;border-radius:6px;font-family:var(--ui);font-size:.8rem;font-weight:550;padding:9px 16px;cursor:pointer;text-decoration:none;transition:background .12s}
 .new-btn::before{content:'+';font-size:1rem;font-weight:400;line-height:1}
 .new-btn:hover{background:var(--accent-hover)}
+
+/* ── Breadcrumb ── */
+.crumbs{display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:11px 32px;border-bottom:1px solid var(--border);font-size:.8rem}
+.crumb{background:none;border:1px solid transparent;border-radius:5px;color:var(--muted);font-family:var(--ui);font-size:.8rem;padding:4px 8px;cursor:pointer;transition:color .12s,background .12s,border-color .12s}
+.crumb:hover{color:var(--text);background:var(--hover)}
+.crumb.here{color:var(--text);font-weight:550;cursor:default}
+.crumb.here:hover{background:none}
+.crumb.drop{border-color:var(--text);background:var(--hover);color:var(--text)}
+.crumb-sep{color:var(--muted);opacity:.55;user-select:none}
 
 .statsbar{padding:11px 32px;border-bottom:1px solid var(--border);font-size:.78rem;color:var(--muted);display:flex;gap:18px}
 .statsbar b{color:var(--text);font-weight:550}
@@ -52,11 +63,13 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1px;background:var(--border)}
 .card{background:var(--surface);display:flex;flex-direction:column;position:relative;overflow:hidden;transition:background .12s}
 .card:hover{background:var(--hover)}
+.card.dragging{opacity:.4}
+.card.drop{outline:2px solid var(--text);outline-offset:-2px}
 .thumb{width:100%;aspect-ratio:4/3;background:var(--bg);border-bottom:1px solid var(--border);overflow:hidden;position:relative}
 .thumb img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:block}
 .thumb .no-prev{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:.78rem;color:var(--muted)}
 .thumb.tp{background:repeating-conic-gradient(var(--checker) 0% 25%,var(--bg) 25% 50%) 0 0/10px 10px}
-.hover-overlay{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .16s}
+.hover-overlay{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px;opacity:0;transition:opacity .16s}
 .card:hover .hover-overlay{opacity:1}
 .hbtn{background:var(--surface);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:var(--ui);font-size:.78rem;font-weight:500;padding:7px 14px;cursor:pointer;text-decoration:none;transition:border-color .12s,background .12s,color .12s;display:inline-block}
 .hbtn:hover{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
@@ -66,6 +79,15 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .card-tags{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap}
 .tag{font-size:.68rem;padding:2px 7px;border:1px solid var(--border2);border-radius:4px;color:var(--muted)}
 .tag.red{border-color:var(--muted);color:var(--text)}
+
+/* ── Folder cards ──
+   The preview is inset inside a frame so a folder still reads as a container
+   at a glance, rather than looking like the drawing it is previewing. */
+.card.folder .thumb{display:flex;align-items:center;justify-content:center;padding:22px 26px}
+.folder-glyph{font-size:2.1rem;opacity:.3;filter:grayscale(1)}
+.folder-badge{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:5px;background:var(--scrim);border:1px solid var(--border2);border-radius:5px;padding:3px 7px;font-size:.66rem;color:var(--text);pointer-events:none}
+.folder-peek{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;image-rendering:pixelated;display:block;border:1px solid var(--border2);box-shadow:0 2px 10px var(--scrim)}
+.card-title .fglyph{margin-right:7px;opacity:.55;font-weight:400}
 
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--accent);color:var(--accent-fg);font-family:var(--ui);font-size:.8rem;font-weight:500;border-radius:6px;padding:10px 18px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:999}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -77,10 +99,12 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
   <div class="logo">JI<em>TT</em>ER<sub>paint</sub></div>
   <div class="hactions">
     <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme"></button>
-    <a href="editor.html" class="new-btn">New drawing</a>
+    <button class="ghost-btn" id="newFolderBtn">New folder</button>
+    <a href="editor.html" class="new-btn" id="newDrawingBtn">New drawing</a>
   </div>
 </header>
 
+<div class="crumbs" id="crumbs"></div>
 <div class="statsbar" id="statsbar"></div>
 <div id="main"></div>
 <div id="toast"></div>
@@ -101,65 +125,373 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
 });
 applyTheme(currentTheme());
 
-// Storage: Electron file system if available, localStorage otherwise (browser/itch.io)
-async function getMeta(){
-  if(window.electronAPI)return window.electronAPI.listDrawings();
-  try{return JSON.parse(localStorage.getItem('jitter_meta')||'[]');}catch{return[];}
-}
-
-async function del(e,id){
-  e.preventDefault();e.stopPropagation();
-  if(!confirm('Delete this drawing?'))return;
-  if(window.electronAPI){
-    await window.electronAPI.deleteDrawing(id);
-  } else {
-    const m=await getMeta();
-    localStorage.setItem('jitter_meta',JSON.stringify(m.filter(d=>d.id!==id)));
+// ══════════════════════════════════════════════════════
+// STORAGE
+// Electron keeps meta.json / folders.json on disk; the browser build keeps the
+// same two lists in localStorage. Everything above this block works on plain
+// arrays and never needs to know which one it got.
+// ══════════════════════════════════════════════════════
+const store={
+  async drawings(){
+    if(window.electronAPI)return (await window.electronAPI.listDrawings())||[];
+    try{return JSON.parse(localStorage.getItem('jitter_meta')||'[]');}catch(e){return[];}
+  },
+  async setDrawings(list){
+    if(window.electronAPI)return window.electronAPI.saveMeta(list);
+    try{localStorage.setItem('jitter_meta',JSON.stringify(list));}catch(e){}
+  },
+  async folders(){
+    if(window.electronAPI)return (await window.electronAPI.listFolders())||[];
+    try{return JSON.parse(localStorage.getItem('jitter_folders')||'[]');}catch(e){return[];}
+  },
+  async setFolders(list){
+    if(window.electronAPI)return window.electronAPI.saveFolders(list);
+    try{localStorage.setItem('jitter_folders',JSON.stringify(list));}catch(e){}
+  },
+  async removeDrawing(id){
+    if(window.electronAPI)return window.electronAPI.deleteDrawing(id);
+    const m=await store.drawings();
+    await store.setDrawings(m.filter(d=>d.id!==id));
     localStorage.removeItem('jitter_d_'+id);
+  },
+};
+
+// ══════════════════════════════════════════════════════
+// FOLDER TREE
+// A flat list; nesting is `parent` pointing at another folder's id.
+// ══════════════════════════════════════════════════════
+let folders=[];
+let drawings=[];
+let cwd=null;              // id of the folder being viewed, null = top level
+
+const byId=id=>folders.find(f=>f.id===id)||null;
+const childFolders=id=>folders.filter(f=>(f.parent||null)===(id||null));
+const drawingsIn=id=>drawings.filter(d=>(d.folder||null)===(id||null));
+
+function pathTo(id){
+  const out=[];
+  let f=byId(id),guard=0;
+  while(f&&guard++<64){out.unshift(f);f=byId(f.parent);}
+  return out;
+}
+// True when `maybeAncestor` is at or above `id` — used to stop a folder being
+// dragged into its own subtree, which would orphan the whole branch.
+function isAncestor(maybeAncestor,id){
+  let f=byId(id),guard=0;
+  while(f&&guard++<64){
+    if(f.id===maybeAncestor)return true;
+    f=byId(f.parent);
   }
-  render();
-  toast('Deleted.');
+  return false;
+}
+function descendantIds(id){
+  const out=[];
+  const walk=p=>childFolders(p).forEach(f=>{out.push(f.id);walk(f.id);});
+  walk(id);
+  return out;
+}
+// Drawings directly inside, plus everything in nested folders.
+function countIn(id){
+  return [id,...descendantIds(id)].reduce((n,f)=>n+drawingsIn(f).length,0);
+}
+// Preview falls back through the subtree so a folder of folders still shows
+// something rather than an empty square.
+function peekIn(id){
+  for(const fid of [id,...descendantIds(id)]){
+    const hit=drawingsIn(fid).find(d=>d.gif);
+    if(hit)return hit.gif;
+  }
+  return null;
 }
 
-async function render(){
-  const drawings=[...await getMeta()].sort((a,b)=>(b.created||'')>(a.created||'')?1:-1);
-  const n=drawings.length;
-  document.getElementById('statsbar').innerHTML=
-    `<span><b>${n}</b> drawing${n!==1?'s':''}</span>${n?'<span>click to edit</span>':''}`;
-  const main=document.getElementById('main');
-  if(!n){
-    main.innerHTML=`<div class="empty"><div class="empty-glyph">🎨</div><h2>No drawings yet</h2><p>Click "New Drawing" to get started.</p></div>`;
+const newId=p=>p+Math.random().toString(36).slice(2,9);
+// Built in JS rather than a CSS content escape, which silently renders as
+// literal text when the escape is not terminated the way the parser expects.
+const FOLDER_GLYPH=String.fromCodePoint(0x1F5C0);
+
+async function createFolder(){
+  const name=(prompt('Folder name','New folder')||'').trim();
+  if(!name)return;
+  folders.push({id:newId('f_'),name,parent:cwd,icon:null,created:new Date().toISOString()});
+  await store.setFolders(folders);
+  render();
+  toast('Folder created.');
+}
+async function renameFolder(id){
+  const f=byId(id);if(!f)return;
+  const name=(prompt('Rename folder',f.name)||'').trim();
+  if(!name||name===f.name)return;
+  f.name=name;
+  await store.setFolders(folders);
+  render();
+}
+// Deleting a folder never deletes artwork: children move up one level.
+async function deleteFolder(id){
+  const f=byId(id);if(!f)return;
+  const n=countIn(id),subs=descendantIds(id).length;
+  const bits=[];
+  if(n)bits.push(n+' drawing'+(n!==1?'s':''));
+  if(subs)bits.push(subs+' folder'+(subs!==1?'s':''));
+  const msg=bits.length
+    ? `Delete "${f.name}"?\n\n${bits.join(' and ')} inside will move up to the parent, not be deleted.`
+    : `Delete "${f.name}"?`;
+  if(!confirm(msg))return;
+  const parent=f.parent||null;
+  childFolders(id).forEach(c=>c.parent=parent);
+  drawingsIn(id).forEach(d=>d.folder=parent);
+  folders=folders.filter(x=>x.id!==id);
+  await store.setFolders(folders);
+  await store.setDrawings(drawings);
+  render();
+  toast('Folder deleted.');
+}
+async function moveDrawing(drawingId,folderId){
+  const d=drawings.find(x=>x.id===drawingId);
+  if(!d||(d.folder||null)===(folderId||null))return;
+  d.folder=folderId||null;
+  await store.setDrawings(drawings);
+  render();
+  toast(folderId?`Moved to "${byId(folderId).name}".`:'Moved to the top level.');
+}
+async function moveFolder(folderId,targetId){
+  if(folderId===targetId)return;
+  const f=byId(folderId);if(!f)return;
+  if((f.parent||null)===(targetId||null))return;
+  if(targetId&&isAncestor(folderId,targetId)){
+    toast('A folder cannot go inside itself.');
     return;
   }
-  main.innerHTML='<div class="grid">'+drawings.map(d=>`
-  <div class="card" data-id="${esc(d.id)}">
+  f.parent=targetId||null;
+  await store.setFolders(folders);
+  render();
+  toast(targetId?`Moved into "${byId(targetId).name}".`:'Moved to the top level.');
+}
+
+// ══════════════════════════════════════════════════════
+// DRAG AND DROP
+// One payload shape for both kinds of card so a drop target only has to ask
+// what it was handed.
+// ══════════════════════════════════════════════════════
+let dragPayload=null; // {kind:'drawing'|'folder', id}
+
+function makeDraggable(el,kind,id){
+  el.draggable=true;
+  el.addEventListener('dragstart',e=>{
+    dragPayload={kind,id};
+    try{e.dataTransfer.setData('text/plain',kind+':'+id);}catch(err){}
+    e.dataTransfer.effectAllowed='move';
+    el.classList.add('dragging');
+  });
+  el.addEventListener('dragend',()=>{dragPayload=null;el.classList.remove('dragging');});
+}
+// `target` is the folder the drop lands in; null means the top level. It may
+// be a function, for targets whose destination changes as you navigate.
+function makeDropTarget(el,target,activeClass){
+  const dest=()=>(typeof target==='function'?target():target)||null;
+  const ok=()=>{
+    if(!dragPayload)return false;
+    const targetId=dest();
+    if(dragPayload.kind==='folder'){
+      if(dragPayload.id===targetId)return false;
+      if(targetId&&isAncestor(dragPayload.id,targetId))return false;
+    }
+    if(dragPayload.kind==='drawing'){
+      const d=drawings.find(x=>x.id===dragPayload.id);
+      if(d&&(d.folder||null)===targetId)return false; // already there
+    }
+    return true;
+  };
+  el.addEventListener('dragover',e=>{
+    if(!ok())return;
+    e.preventDefault();e.dataTransfer.dropEffect='move';
+    el.classList.add(activeClass);
+  });
+  el.addEventListener('dragleave',()=>el.classList.remove(activeClass));
+  el.addEventListener('drop',e=>{
+    el.classList.remove(activeClass);
+    if(!ok())return;
+    e.preventDefault();e.stopPropagation();
+    const p=dragPayload,targetId=dest();dragPayload=null;
+    if(p.kind==='drawing')moveDrawing(p.id,targetId);
+    else moveFolder(p.id,targetId);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════
+function openFolder(id){cwd=id;render();}
+
+function renderCrumbs(){
+  const bar=document.getElementById('crumbs');
+  bar.innerHTML='';
+  const trail=[{id:null,name:'All drawings'},...pathTo(cwd)];
+  trail.forEach((f,i)=>{
+    if(i)bar.appendChild(Object.assign(document.createElement('span'),
+      {className:'crumb-sep',textContent:'/'}));
+    const b=document.createElement('button');
+    b.className='crumb'+(i===trail.length-1?' here':'');
+    b.textContent=f.name;
+    if(i<trail.length-1){
+      b.addEventListener('click',()=>openFolder(f.id));
+      // Dropping on a crumb moves the item up to that level.
+      makeDropTarget(b,f.id,'drop');
+    }
+    bar.appendChild(b);
+  });
+}
+
+function folderCard(f){
+  const el=document.createElement('div');
+  el.className='card folder';
+  el.dataset.folderId=f.id;
+
+  const thumb=document.createElement('div');
+  thumb.className='thumb';
+  const peek=f.icon||peekIn(f.id);
+  if(peek){
+    const img=document.createElement('img');
+    img.className='folder-peek';img.src=peek;img.alt=f.name;
+    thumb.appendChild(img);
+  } else {
+    thumb.appendChild(Object.assign(document.createElement('div'),
+      {className:'folder-glyph',textContent:FOLDER_GLYPH}));
+  }
+  const badge=document.createElement('div');
+  badge.className='folder-badge';
+  badge.textContent=FOLDER_GLYPH+' '+countIn(f.id);
+  thumb.appendChild(badge);
+
+  const ov=document.createElement('div');
+  ov.className='hover-overlay';
+  const mk=(label,fn)=>{
+    const b=document.createElement('button');
+    b.className='hbtn';b.textContent=label;
+    b.addEventListener('click',e=>{e.stopPropagation();fn();});
+    return b;
+  };
+  ov.appendChild(mk('Open',()=>openFolder(f.id)));
+  ov.appendChild(mk('Rename',()=>renameFolder(f.id)));
+  ov.appendChild(mk(f.icon?'Redraw icon':'Draw icon',()=>{
+    location.href='editor.html?icon='+encodeURIComponent(f.id);
+  }));
+  if(f.icon)ov.appendChild(mk('Clear icon',async()=>{
+    f.icon=null;await store.setFolders(folders);render();toast('Icon cleared.');
+  }));
+  ov.appendChild(mk('Delete',()=>deleteFolder(f.id)));
+  thumb.appendChild(ov);
+
+  const info=document.createElement('div');
+  info.className='card-info';
+  const title=document.createElement('div');
+  title.className='card-title';
+  title.appendChild(Object.assign(document.createElement('span'),
+    {className:'fglyph',textContent:FOLDER_GLYPH}));
+  title.appendChild(document.createTextNode(f.name));
+  const meta=document.createElement('div');
+  meta.className='card-meta';
+  const n=countIn(f.id),subs=childFolders(f.id).length;
+  meta.innerHTML=`<span>${n} drawing${n!==1?'s':''}</span><span>${subs?subs+' folder'+(subs!==1?'s':''):''}</span>`;
+  info.appendChild(title);info.appendChild(meta);
+
+  el.appendChild(thumb);el.appendChild(info);
+  el.addEventListener('dblclick',()=>openFolder(f.id));
+  makeDraggable(el,'folder',f.id);
+  makeDropTarget(el,f.id,'drop');
+  return el;
+}
+
+function drawingCard(d){
+  const el=document.createElement('div');
+  el.className='card';
+  el.dataset.id=d.id;
+  el.innerHTML=`
     <div class="thumb${d.transparentBg||d.borderRect?' tp':''}">
-      ${d.gif?`<img src="${d.gif}" alt="${esc(d.title||'Untitled')}">`:
+      ${d.gif?`<img src="${esc(d.gif)}" alt="${esc(d.title||'Untitled')}">`:
                '<div class="no-prev">no preview</div>'}
       <div class="hover-overlay">
         <a href="editor.html?id=${esc(d.id)}" class="hbtn">Edit</a>
-        <button class="hbtn" onclick="del(event,'${esc(d.id)}')">Delete</button>
+        <button class="hbtn" data-del="${esc(d.id)}">Delete</button>
       </div>
     </div>
     <div class="card-info">
       <div class="card-title">${esc(d.title||'Untitled')}</div>
       <div class="card-meta">
         <span>${d.width||480}×${d.height||360}</span>
-        <span>${(d.updated||d.created||'').slice(0,10)}</span>
+        <span>${esc((d.updated||d.created||'').slice(0,10))}</span>
       </div>
       <div class="card-tags">
         ${d.borderRect?'<span class="tag red">border</span>':''}
         ${d.transparentBg?'<span class="tag">transparent</span>':''}
         ${d.animMode?'<span class="tag">anim</span>':''}
       </div>
-    </div>
-  </div>`).join('')+'</div>';
+    </div>`;
+  el.querySelector('[data-del]').addEventListener('click',e=>{
+    e.preventDefault();e.stopPropagation();del(d.id);
+  });
+  makeDraggable(el,'drawing',d.id);
+  return el;
+}
+
+function render(){
+  renderCrumbs();
+  // New drawings land in the folder you are looking at.
+  document.getElementById('newDrawingBtn').href=
+    cwd?('editor.html?folder='+encodeURIComponent(cwd)):'editor.html';
+  const subs=childFolders(cwd),here=drawingsIn(cwd).slice()
+    .sort((a,b)=>(b.created||'')>(a.created||'')?1:-1);
+  const total=drawings.length;
+
+  const parts=[];
+  if(subs.length)parts.push(`<b>${subs.length}</b> folder${subs.length!==1?'s':''}`);
+  parts.push(`<b>${here.length}</b> drawing${here.length!==1?'s':''}`);
+  if(cwd===null&&total!==here.length)parts.push(`<b>${total}</b> in total`);
+  document.getElementById('statsbar').innerHTML=
+    parts.map(p=>`<span>${p}</span>`).join('')+
+    (subs.length||here.length?'<span>drag a card onto a folder to move it</span>':'');
+
+  const main=document.getElementById('main');
+  main.innerHTML='';
+  if(!subs.length&&!here.length){
+    main.innerHTML=`<div class="empty"><div class="empty-glyph">🎨</div>
+      <h2>${cwd===null?'No drawings yet':'This folder is empty'}</h2>
+      <p>${cwd===null?'Click "New Drawing" to get started.':'Drag a drawing here, or start a new one.'}</p></div>`;
+    return;
+  }
+  const grid=document.createElement('div');
+  grid.className='grid';
+  subs.forEach(f=>grid.appendChild(folderCard(f)));
+  here.forEach(d=>grid.appendChild(drawingCard(d)));
+  main.appendChild(grid);
+}
+
+async function del(id){
+  if(!confirm('Delete this drawing?'))return;
+  await store.removeDrawing(id);
+  drawings=drawings.filter(d=>d.id!==id);
+  render();
+  toast('Deleted.');
 }
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
-render();
+document.getElementById('newFolderBtn').addEventListener('click',createFolder);
+
+// Dropping on empty gallery space moves an item into the folder being viewed.
+makeDropTarget(document.getElementById('main'),()=>cwd,'drop');
+
+(async function init(){
+  [drawings,folders]=await Promise.all([store.drawings(),store.folders()]);
+  // A folder id that no longer exists (deleted elsewhere) must not strand the
+  // drawing out of sight at the top level.
+  const ids=new Set(folders.map(f=>f.id));
+  let fixed=false;
+  for(const d of drawings)if(d.folder&&!ids.has(d.folder)){d.folder=null;fixed=true;}
+  for(const f of folders)if(f.parent&&!ids.has(f.parent)){f.parent=null;fixed=true;}
+  if(fixed){await store.setDrawings(drawings);await store.setFolders(folders);}
+  render();
+})();
 </script>
 </body>
 </html>

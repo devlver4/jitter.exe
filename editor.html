@@ -63,6 +63,21 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .cust-row{display:flex;align-items:center;gap:7px;margin-top:6px}
 .cust-row input[type=color]{width:24px;height:24px;border:1px solid var(--border2);background:none;padding:1px;cursor:pointer}
 .cust-row span{font-size:.58rem;color:var(--muted)}
+.cust-toggle{margin-left:auto;background:none;border:1px solid var(--border2);color:var(--muted);border-radius:3px;cursor:pointer;font-size:.6rem;line-height:1;padding:3px 5px;transition:color .12s,border-color .12s,background .12s}
+.cust-toggle:hover{color:var(--text);border-color:var(--muted);background:var(--hover)}
+.cust-toggle .chev{display:inline-block;transition:transform .15s}
+.cust-toggle[aria-expanded=true] .chev{transform:rotate(180deg)}
+.cust-panel{display:none;margin-top:7px}
+.cust-panel.open{display:block}
+.cust-swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.cust-sw{aspect-ratio:1;border-radius:2px;cursor:grab;border:2px solid transparent;box-shadow:inset 0 0 0 1px var(--border2);transition:transform .1s,border-color .1s}
+.cust-sw:hover{transform:scale(1.13)}
+.cust-sw:active{cursor:grabbing}
+.cust-sw.active{border-color:var(--text)}
+.cust-sw.dragging{opacity:.35}
+.cust-trash{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px dashed var(--border2);border-radius:2px;color:var(--muted);font-size:.78rem;line-height:1;transition:color .12s,border-color .12s,background .12s}
+.cust-trash.over{color:var(--text);border-color:var(--text);border-style:solid;background:var(--hover)}
+.cust-hint{font-size:.52rem;color:var(--muted);margin-top:6px;line-height:1.6}
 .bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .bbtn{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border2);cursor:pointer;border-radius:3px;transition:all .1s}
 .bbtn:hover{background:var(--hover);border-color:var(--muted)}
@@ -230,6 +245,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <div class="cust-row">
       <input type="color" id="customColor" value="#111111">
       <span>custom</span>
+      <button class="cust-toggle" id="custToggle" aria-expanded="false" title="Saved colours"><span class="chev">▾</span></button>
+    </div>
+    <div class="cust-panel" id="custPanel">
+      <div class="cust-swatches" id="custSwatches"></div>
+      <div class="cust-hint" id="custHint"></div>
     </div>
   </div>
 
@@ -457,6 +477,10 @@ let gifFrames     = 24;
 let zoom          = 1;
 let dirty         = false;
 let currentId     = null; // set in init() after async load
+// ?folder=<id>  new drawings are filed there
+// ?icon=<id>    the canvas is a folder icon, not a drawing
+let currentFolder = null;
+let iconFolder    = null;
 
 // ══════════════════════════════════════════════════════
 // CLIP MASKS
@@ -558,7 +582,108 @@ function buildPalettes(){
     c=>c===bgColor);
 }
 buildPalettes();
-document.getElementById('customColor').addEventListener('input',function(){penColor=this.value;document.querySelectorAll('#colorGrid .csw').forEach(s=>s.classList.remove('active'));});
+
+// ======================================================
+// CUSTOM COLOUR SHELF
+// Colours picked with the custom picker persist across drawings and sessions,
+// most recent first. The shelf stays collapsed behind the chevron so it costs
+// no panel space until asked for; a swatch is removed by dragging it onto the
+// bin that sits at the end of the grid.
+// ======================================================
+const CUSTOM_KEY='jitter_custom_colors';
+const CUSTOM_MAX=24;
+const BIN_GLYPH=String.fromCodePoint(0x1F5D1);
+let customColors=[];
+
+function isHex(c){return typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c);}
+function loadCustomColors(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(CUSTOM_KEY)||'[]');
+    customColors=Array.isArray(raw)?raw.filter(isHex).map(c=>c.toLowerCase()).slice(0,CUSTOM_MAX):[];
+  }catch(e){customColors=[];}
+}
+function persistCustomColors(){
+  try{localStorage.setItem(CUSTOM_KEY,JSON.stringify(customColors));}catch(e){}
+}
+function addCustomColor(hex){
+  if(!isHex(hex))return false;
+  hex=hex.toLowerCase();
+  // Re-picking a colour promotes it to the front instead of duplicating it.
+  customColors=[hex,...customColors.filter(c=>c!==hex)].slice(0,CUSTOM_MAX);
+  persistCustomColors();renderCustomColors();
+  return true;
+}
+function removeCustomColor(hex){
+  if(!isHex(hex))return false;
+  hex=hex.toLowerCase();
+  const before=customColors.length;
+  customColors=customColors.filter(c=>c!==hex);
+  if(customColors.length===before)return false;
+  persistCustomColors();renderCustomColors();
+  return true;
+}
+function useCustomColor(hex){
+  penColor=hex;
+  document.getElementById('customColor').value=hex;
+  document.querySelectorAll('#colorGrid .csw').forEach(el=>el.classList.remove('active'));
+  renderCustomColors();
+  setTool(currentTool); // refresh the layer badge swatch
+}
+
+function renderCustomColors(){
+  const grid=document.getElementById('custSwatches');
+  const hint=document.getElementById('custHint');
+  if(!grid)return;
+  grid.innerHTML='';
+  for(const c of customColors){
+    const d=document.createElement('div');
+    d.className='cust-sw'+(c===String(penColor).toLowerCase()?' active':'');
+    d.style.background=c;d.title=c;d.draggable=true;
+    d.dataset.color=c;
+    d.addEventListener('click',()=>useCustomColor(c));
+    d.addEventListener('dragstart',e=>{
+      e.dataTransfer.setData('text/plain',c);
+      e.dataTransfer.effectAllowed='move';
+      d.classList.add('dragging');
+    });
+    d.addEventListener('dragend',()=>d.classList.remove('dragging'));
+    grid.appendChild(d);
+  }
+  // The bin is the last cell of the swatch grid.
+  const bin=document.createElement('div');
+  bin.className='cust-trash';bin.id='custTrash';
+  bin.textContent=BIN_GLYPH;
+  bin.title='Drag a colour here to remove it';
+  bin.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';bin.classList.add('over');});
+  bin.addEventListener('dragleave',()=>bin.classList.remove('over'));
+  bin.addEventListener('drop',e=>{
+    e.preventDefault();bin.classList.remove('over');
+    if(removeCustomColor(e.dataTransfer.getData('text/plain')))toast('Colour removed.');
+  });
+  grid.appendChild(bin);
+  if(hint)hint.textContent=customColors.length
+    ? 'Drag a colour onto the bin to remove it.'
+    : 'Colours you pick here are saved for next time.';
+}
+
+document.getElementById('custToggle').addEventListener('click',function(){
+  const panel=document.getElementById('custPanel');
+  const open=!panel.classList.contains('open');
+  panel.classList.toggle('open',open);
+  this.setAttribute('aria-expanded',String(open));
+});
+
+const customInput=document.getElementById('customColor');
+// `input` fires continuously while the picker is open, so paint live from it
+// but only commit to the shelf once the choice is settled.
+customInput.addEventListener('input',function(){
+  penColor=this.value;
+  document.querySelectorAll('#colorGrid .csw').forEach(el=>el.classList.remove('active'));
+  renderCustomColors();
+});
+customInput.addEventListener('change',function(){addCustomColor(this.value);});
+
+loadCustomColors();renderCustomColors();
 
 // ══════════════════════════════════════════════════════
 // BRUSH CACHE
@@ -1801,6 +1926,20 @@ document.getElementById('exportGo').addEventListener('click',async()=>{
 });
 
 // ══════════════════════════════════════════════════════
+// FOLDERS
+// Only enough of the gallery's storage layer to file a drawing or write back a
+// folder icon.
+// ══════════════════════════════════════════════════════
+async function loadFolders(){
+  if(window.electronAPI)return (await window.electronAPI.listFolders())||[];
+  try{return JSON.parse(localStorage.getItem('jitter_folders')||'[]');}catch(e){return[];}
+}
+async function storeFolders(list){
+  if(window.electronAPI)return window.electronAPI.saveFolders(list);
+  try{localStorage.setItem('jitter_folders',JSON.stringify(list));}catch(e){}
+}
+
+// ══════════════════════════════════════════════════════
 // SAVE
 // ══════════════════════════════════════════════════════
 document.getElementById('btnSave').addEventListener('click',async()=>{
@@ -1812,6 +1951,19 @@ document.getElementById('btnSave').addEventListener('click',async()=>{
     const blob=makeGIF(ef.map(f=>f.canvas),ef.map(f=>f.delay),needsTransp());
     setProg(0.9);progLbl('Saving...');
     const gif64=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(blob);});
+
+    // Icon mode: the canvas is a folder's icon, so it is written to the folder
+    // list and never becomes a drawing of its own.
+    if(iconFolder){
+      const list=await loadFolders();
+      const f=list.find(x=>x.id===iconFolder);
+      if(!f){hideProg();toast('That folder no longer exists.');return;}
+      f.icon=gif64;
+      await storeFolders(list);
+      hideProg();markSaved();toast('Icon saved ✓');
+      setTimeout(()=>{location.href='index.html';},650);
+      return;
+    }
     // Strip the render caches; keep only what actually describes the drawing.
     const ser=s=>{const{_canvas,_c,_fo,...rest}=s;return rest;};
     // Only clip masks a stroke still points at are worth writing out.
@@ -1825,7 +1977,7 @@ document.getElementById('btnSave').addEventListener('click',async()=>{
     const meta={
       id:currentId,title:document.getElementById('titleInput').value.trim()||'Untitled',
       width:W,height:H,bg:bgColor,transparentBg,borderRect,borderColor,borderSize,
-      gif:gif64,animMode,animFPS,updated:now,
+      gif:gif64,animMode,animFPS,updated:now,folder:currentFolder,
     };
     // Full drawing data stored separately
     const drawData={
@@ -1899,8 +2051,28 @@ document.addEventListener('keydown',e=>{
 // INIT — LOAD EXISTING DRAWING
 // ══════════════════════════════════════════════════════
 async function init(){
+  const params=new URLSearchParams(location.search);
+  currentFolder=params.get('folder')||null;
+  iconFolder=params.get('icon')||null;
+
+  // Icon mode: a small square canvas whose save writes back to the folder.
+  if(iconFolder){
+    const f=(await loadFolders()).find(x=>x.id===iconFolder);
+    document.getElementById('titleInput').value=f?('Icon: '+f.name):'Folder icon';
+    document.getElementById('titleInput').disabled=true;
+    document.getElementById('btnSave').textContent='Save icon';
+    W=64;H=64;
+    document.getElementById('sizeW').value=W;
+    document.getElementById('sizeH').value=H;
+    canvas.width=W;canvas.height=H;ctx.imageSmoothingEnabled=false;
+    setSize(W,H);buildPalettes();
+    setZoom(4);updateStatus();
+    toast(f?('Drawing an icon for "'+f.name+'"'):'Drawing a folder icon');
+    return;
+  }
+
   // Load drawing: Electron file system or browser localStorage
-  const _id=new URLSearchParams(location.search).get('id');
+  const _id=params.get('id');
   if(_id){
     if(window.electronAPI){
       const [metaList,drawData]=await Promise.all([
@@ -1917,6 +2089,7 @@ async function init(){
       }catch(e){INIT=null;}
     }
     currentId=INIT?INIT.id:null;
+    if(INIT&&INIT.folder!==undefined)currentFolder=INIT.folder||null;
   }
 
   if(INIT){

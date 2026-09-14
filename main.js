@@ -10,6 +10,7 @@ if (process.env.PORTABLE_EXECUTABLE_DIR) {
 
 const DRAWINGS_DIR = path.join(app.getPath('userData'), 'drawings');
 const META_FILE    = path.join(DRAWINGS_DIR, 'meta.json');
+const FOLDERS_FILE = path.join(DRAWINGS_DIR, 'folders.json');
 fs.mkdirSync(DRAWINGS_DIR, { recursive: true });
 
 // ── helpers ──────────────────────────────────────────────
@@ -21,6 +22,14 @@ function writeMeta(list) {
 }
 function drawingPath(id) {
   return path.join(DRAWINGS_DIR, id + '.json');
+}
+// Folders are a flat list of { id, name, parent, icon }; nesting comes from
+// `parent` pointing at another folder's id, or null for the top level.
+function readFolders() {
+  try { return JSON.parse(fs.readFileSync(FOLDERS_FILE, 'utf8')); } catch { return []; }
+}
+function writeFolders(list) {
+  fs.writeFileSync(FOLDERS_FILE, JSON.stringify(list));
 }
 
 // ── IPC handlers ─────────────────────────────────────────
@@ -44,6 +53,13 @@ ipcMain.handle('delete-drawing', (_, id) => {
   try { fs.unlinkSync(drawingPath(id)); } catch {}
   return { ok: true };
 });
+
+// Moving a drawing between folders only touches the index, not the drawing
+// file, so the gallery can rewrite meta on its own.
+ipcMain.handle('save-meta', (_, list) => { writeMeta(list); return { ok: true }; });
+
+ipcMain.handle('list-folders', () => readFolders());
+ipcMain.handle('save-folders', (_, list) => { writeFolders(list); return { ok: true }; });
 
 ipcMain.handle('open-drawings-folder', () => shell.openPath(DRAWINGS_DIR));
 

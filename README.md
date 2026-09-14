@@ -14,6 +14,9 @@ Available on [itch.io](https://devlver4.itch.io/jitter-living-ink) — runs in t
 - Animated border
 - Export to GIF, PNG, WebP, JPEG, WebM
 - Desktop app (.exe) for Windows
+- Light and dark themes
+- Saved custom colours, with drag-to-bin removal
+- Folders, nestable, with a preview or a hand-drawn icon
 
 ---
 
@@ -46,6 +49,22 @@ Animation mode: **Space** play/pause, **←/→** step frames, **A** add frame.
 
 ---
 
+## Organising
+
+**Folders.** *New folder* makes one where you are standing; folders nest as
+deep as you like. Drag a drawing — or a folder — onto a folder card to move it
+in, or onto a breadcrumb to move it back out. A folder shows the first drawing
+inside it as its preview, or you can draw it an icon of its own from the
+folder's *Draw icon* button.
+
+Deleting a folder never deletes artwork. Whatever is inside moves up one level.
+
+**Custom colours.** Colours picked with the custom picker are remembered
+between sessions. The chevron beside *custom* opens the shelf; drag a swatch
+onto the bin at the end of it to forget that colour.
+
+---
+
 ## Development
 
 No build step — `editor.html` is the whole app, with the pure logic
@@ -58,7 +77,7 @@ npm start           # run the desktop app
 npm run build       # package the Windows exe into dist/
 
 npm test            # unit tests for lib.js
-npm run test:smoke  # drives the real editor in a headless Electron window
+npm run test:ui     # drives the real app in headless Electron windows
 npm run bench       # per-stroke cost at 40 / 240 / 500 strokes
 ```
 
