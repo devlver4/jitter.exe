@@ -7,3 +7,6 @@ dist/
 # Local drawings (Electron writes these next to the exe in portable mode)
 drawings/
 JitterData/
+
+# Screenshots from test/shot.js
+shot-*.png
